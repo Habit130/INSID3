@@ -5,6 +5,7 @@ import argparse
 SUPPORTED_DATASETS = [
     "coco", "lvis", "pascal_part", "paco_part",
     "isaid", "isic", "lung", "suim", "permis",
+    "refcoco", "refcoco+", "refcocog",
 ]
 
 
@@ -69,6 +70,12 @@ def get_args_parser() -> argparse.ArgumentParser:
         "--data-root",
         default="data",
         help="Root directory of datasets",
+    )
+    parser.add_argument(
+        "--split",
+        default="val",
+        help="Evaluation split for RefCOCO-family datasets "
+             "(val/testA/testB for refcoco and refcoco+; val/test_U/test_G for refcocog)",
     )
     parser.add_argument(
         "--fold",

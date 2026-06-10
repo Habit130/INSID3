@@ -10,6 +10,7 @@ from .suim import build as build_suim
 from .isaid import build as build_isaid
 from .permis import build as build_permis
 from .spair import build as build_spair
+from .refcoco import build as build_refcoco
 
 _BUILDERS = {
     'coco': build_coco,
@@ -22,6 +23,9 @@ _BUILDERS = {
     'isaid': build_isaid,
     'permis': build_permis,
     'spair': build_spair,
+    'refcoco': build_refcoco,
+    'refcoco+': build_refcoco,
+    'refcocog': build_refcoco,
 }
 
 
