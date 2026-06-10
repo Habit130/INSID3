@@ -43,12 +43,12 @@ def test_text_similarity_localizes_referred_object(encoder):
     """Argmax of the patch-vs-text similarity must land inside the GT object."""
     from utils.data import build_transform, downsample_mask, load_image, load_mask
 
-    image, _ = load_image("assets/ref_cat_image.jpg", build_transform(1024), "cuda")
+    image, _ = load_image("assets/cat_image.jpg", build_transform(1024), "cuda")
     feats = encoder.encode_patches(image)
     proto = encoder.encode_expression("a cat")
     sim = torch.einsum("c,chw->hw", proto, feats)
 
-    gt = load_mask("assets/ref_cat_mask.png", 1024, "cuda")
+    gt = load_mask("assets/cat_mask.png", 1024, "cuda")
     gt_small = downsample_mask(gt.unsqueeze(0), sim.shape[0], sim.shape[1])
 
     flat_idx = int(sim.flatten().argmax().item())

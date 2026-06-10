@@ -27,8 +27,8 @@ def test_text_to_mask_returns_boolean_mask_at_source_resolution(model):
     """README minimal usage: one image + one Referring Expression -> (H, W) bool mask."""
     from PIL import Image
 
-    source = Image.open("assets/ref_cat_image.jpg")
-    model.set_target("assets/ref_cat_image.jpg")
+    source = Image.open("assets/cat_image.jpg")
+    model.set_target("assets/cat_image.jpg")
     model.set_text("a cat")
     pred = model.segment()
 
@@ -42,11 +42,11 @@ def test_prediction_overlaps_referred_object(model):
     import numpy as np
     from PIL import Image
 
-    model.set_target("assets/ref_cat_image.jpg")
+    model.set_target("assets/cat_image.jpg")
     model.set_text("a cat")
     pred = model.segment().cpu().numpy()
 
-    gt = np.array(Image.open("assets/ref_cat_mask.png")) > 0
+    gt = np.array(Image.open("assets/cat_mask.png")) > 0
     iou = (pred & gt).sum() / (pred | gt).sum()
     assert iou > 0.25, f"IoU with GT cat mask too low: {iou:.3f}"
 
@@ -54,7 +54,7 @@ def test_prediction_overlaps_referred_object(model):
 @requires_cuda
 def test_state_resets_after_segment(model):
     """segment() consumes the episode; a second call must demand fresh inputs."""
-    model.set_target("assets/ref_cat_image.jpg")
+    model.set_target("assets/cat_image.jpg")
     model.set_text("a cat")
     model.segment()
 
@@ -71,8 +71,8 @@ def test_crf_refinement_produces_mask(model):
     from models.tfris import TFRIS
 
     crf_model = TFRIS(dinotxt=model.dinotxt, mask_refiner="crf", device="cuda")
-    source = Image.open("assets/ref_cat_image.jpg")
-    crf_model.set_target("assets/ref_cat_image.jpg")
+    source = Image.open("assets/cat_image.jpg")
+    crf_model.set_target("assets/cat_image.jpg")
     crf_model.set_text("a cat")
     pred = crf_model.segment()
 
@@ -90,7 +90,7 @@ def test_visualization_saves_target_expression_and_mask(tmp_path):
     mask[100:300, 200:400] = True
     out = tmp_path / "viz" / "pred.png"
     visualize_prediction_referring(
-        "assets/ref_cat_image.jpg", "a cat", mask, out
+        "assets/cat_image.jpg", "a cat", mask, out
     )
 
     assert out.is_file() and out.stat().st_size > 0
@@ -123,6 +123,6 @@ def test_segment_without_target_raises(model):
 
 @requires_cuda
 def test_segment_without_text_raises(model):
-    model.set_target("assets/ref_cat_image.jpg")
+    model.set_target("assets/cat_image.jpg")
     with pytest.raises(RuntimeError, match="set_text"):
         model.segment()

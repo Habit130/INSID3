@@ -10,12 +10,6 @@ def get_args_parser() -> argparse.ArgumentParser:
 
     # Model
     parser.add_argument(
-        "--model-size",
-        default="large",
-        choices=["small", "base", "large"],
-        help="DINOv3 backbone size",
-    )
-    parser.add_argument(
         "--image-size",
         default=1024,
         type=int,

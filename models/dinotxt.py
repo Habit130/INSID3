@@ -20,8 +20,8 @@ _BPE_VOCAB = "pretrain/bpe_simple_vocab_16e6.txt.gz"
 # Patch-vs-text similarity maps share a dominant non-semantic component
 # (maps for unrelated texts correlate at 0.8-0.9), so the raw similarity of a
 # single expression is unusable for localization. Subtracting the mean
-# embedding of a fixed bank of neutral texts removes that shared bias - the
-# text-space analogue of INSID3's positional debiasing. The bank is a fixed
+# embedding of a fixed bank of neutral texts removes that shared component -
+# the Text Bias (see CONTEXT.md and ADR 0002). The bank is a fixed
 # implementation constant, not a tuned hyperparameter.
 _NEUTRAL_TEXTS = (
     "a photo", "an image", "a thing", "an object", "the background",
@@ -56,8 +56,8 @@ class DinoTxtEncoder(nn.Module):
     @torch.no_grad()
     def encode_expression(self, expression: str) -> torch.Tensor:
         """Embed a referring expression as an L2-normalized Text Prototype (C,)."""
-        debiased = self._embed_text(expression) - self._neutral_mean
-        return torch.nn.functional.normalize(debiased, p=2, dim=0)
+        unbiased = self._embed_text(expression) - self._neutral_mean
+        return torch.nn.functional.normalize(unbiased, p=2, dim=0)
 
     @torch.no_grad()
     def encode_image_features(self, image: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:

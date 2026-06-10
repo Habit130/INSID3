@@ -13,7 +13,7 @@ from utils.data import build_transform, load_image
 
 def main() -> None:
     parser = argparse.ArgumentParser("dino.txt similarity heatmap")
-    parser.add_argument("--image", default="assets/ref_cat_image.jpg")
+    parser.add_argument("--image", default="assets/cat_image.jpg")
     parser.add_argument("--expression", default="a cat")
     parser.add_argument("--output", default="similarity_heatmap.png")
     parser.add_argument("--image-size", type=int, default=1024)

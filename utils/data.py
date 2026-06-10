@@ -3,14 +3,12 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
-import pycocotools.mask as mask_util
 from PIL import Image
 from torchvision import transforms
-from typing import List
 
 
 def build_transform(image_size: int) -> transforms.Compose:
-    """Build the standard image transform for INSID3 inference.
+    """Build the standard image transform for TFRIS inference.
 
     Args:
         image_size: target spatial resolution.
@@ -81,15 +79,6 @@ def load_mask(
         size=(image_size, image_size),
         mode="nearest",
     ).squeeze(0) > 0.5
-
-
-def polygons_to_bitmask(polygons: List[np.ndarray], height: int, width: int) -> np.ndarray:
-    """Convert COCO polygon annotations to a binary mask."""
-    if len(polygons) == 0:
-        return np.zeros((height, width)).astype(bool)
-    rles = mask_util.frPyObjects(polygons, height, width)
-    rle = mask_util.merge(rles)
-    return mask_util.decode(rle).astype(bool)
 
 
 def denormalize(tens: torch.Tensor) -> torch.Tensor:
