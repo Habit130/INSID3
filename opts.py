@@ -1,23 +1,14 @@
-"""Command-line arguments for INSID3 inference."""
+"""Command-line arguments for TFRIS inference."""
 
 import argparse
 
-SUPPORTED_DATASETS = [
-    "coco", "lvis", "pascal_part", "paco_part",
-    "isaid", "isic", "lung", "suim", "permis",
-]
+SUPPORTED_DATASETS = ["refcoco", "refcoco+", "refcocog"]
 
 
 def get_args_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser("INSID3 inference", add_help=False)
+    parser = argparse.ArgumentParser("TFRIS inference", add_help=False)
 
     # Model
-    parser.add_argument(
-        "--model-size",
-        default="large",
-        choices=["small", "base", "large"],
-        help="DINOv3 backbone size",
-    )
     parser.add_argument(
         "--image-size",
         default=1024,
@@ -30,21 +21,7 @@ def get_args_parser() -> argparse.ArgumentParser:
         help="Enable CRF-based mask refinement.",
     )
 
-    # Episode
-    parser.add_argument(
-        "--shots",
-        default=1,
-        type=int,
-        help="Number of reference images (shots)",
-    )
-
     # Hyperparameters
-    parser.add_argument(
-        "--svd-comps",
-        default=500,
-        type=int,
-        help="Number of SVD components for positional debiasing",
-    )
     parser.add_argument(
         "--tau",
         default=0.6,
@@ -57,11 +34,18 @@ def get_args_parser() -> argparse.ArgumentParser:
         type=float,
         help="Cluster aggregation threshold",
     )
+    parser.add_argument(
+        "--cand-quantile",
+        default=0.9,
+        type=float,
+        help="Candidate Localization quantile: patches with "
+             "sim > quantile(sim, q) become candidates",
+    )
 
     # Dataset
     parser.add_argument(
         "--dataset",
-        default="coco",
+        default="refcoco",
         choices=SUPPORTED_DATASETS,
         help="Dataset for evaluation",
     )
@@ -71,13 +55,21 @@ def get_args_parser() -> argparse.ArgumentParser:
         help="Root directory of datasets",
     )
     parser.add_argument(
-        "--fold",
-        default=0,
-        type=int,
-        help="Fold index: for COCO, LVIS, iSAID, PASCAL-Part, PACO-Part",
+        "--split",
+        default="val",
+        help="Evaluation split for RefCOCO-family datasets "
+             "(val/testA/testB for refcoco and refcoco+; val/test_U/test_G for refcocog)",
     )
 
     # Runtime
+    parser.add_argument(
+        "--limit",
+        default=None,
+        type=int,
+        help="Cap inference to the first N expressions; the official evaluator "
+             "is skipped (it requires complete splits) and the prediction "
+             "contract is validated instead",
+    )
     parser.add_argument(
         "--output-dir",
         default="output",
@@ -85,7 +77,7 @@ def get_args_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--exp-name",
-        default="insid3-coco",
+        default="tfris-refcoco",
         help="Run name",
     )
     parser.add_argument(

@@ -1,7 +1,7 @@
 [project]
-name = "INSID3"
+name = "TFRIS"
 version = "0.1.0"
-description = "INSID3: Training-Free In-Context Segmentation with DINOv3"
+description = "TFRIS: Training-Free Referring Image Segmentation with DINOv3 + dino.txt"
 license = { file = "LICENSE" }
 readme = "README.md"
 requires-python = "==3.10.*"
@@ -10,12 +10,8 @@ dependencies = [
     "torchvision==0.22.1",
     "numpy",
     "Pillow",
-    "einops",
     "scikit-learn",
-    "pycocotools",
     "tqdm",
-    "torchmetrics",
-    "termcolor",
     "matplotlib",
     "CRF @ git+https://github.com/netw0rkf10w/CRF.git",
 ]
