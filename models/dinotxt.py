@@ -60,15 +60,30 @@ class DinoTxtEncoder(nn.Module):
         return torch.nn.functional.normalize(debiased, p=2, dim=0)
 
     @torch.no_grad()
-    def encode_patches(self, image: torch.Tensor) -> torch.Tensor:
-        """Project a (1, 3, H, W) image to L2-normalized Aligned Features (C, h, w)."""
-        _, patch_tokens, _ = self.model.encode_image_with_patch_tokens(
+    def encode_image_features(self, image: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        """Encode a (1, 3, H, W) image in one backbone pass (ADR 0001).
+
+        Returns:
+            (Native Features, Aligned Features): L2-normalized (C, h, w) grids;
+            native patch tokens come from the backbone's last layer, the same
+            layer INSID3's feature extraction used (hub config patch_token_layer=1).
+        """
+        _, patch_tokens, backbone_patch_tokens = self.model.encode_image_with_patch_tokens(
             image.to(self.device)
         )
         h = image.shape[-2] // 16
         w = image.shape[-1] // 16
-        feats = patch_tokens[0].reshape(h, w, -1).permute(2, 0, 1)
-        return torch.nn.functional.normalize(feats, p=2, dim=0)
+        aligned = patch_tokens[0].reshape(h, w, -1).permute(2, 0, 1)
+        native = backbone_patch_tokens[0].reshape(h, w, -1).permute(2, 0, 1)
+        return (
+            torch.nn.functional.normalize(native, p=2, dim=0),
+            torch.nn.functional.normalize(aligned, p=2, dim=0),
+        )
+
+    @torch.no_grad()
+    def encode_patches(self, image: torch.Tensor) -> torch.Tensor:
+        """Project a (1, 3, H, W) image to L2-normalized Aligned Features (C, h, w)."""
+        return self.encode_image_features(image)[1]
 
 
 def build_dinotxt(device: str = "cuda") -> DinoTxtEncoder:

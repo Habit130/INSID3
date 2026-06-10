@@ -58,6 +58,13 @@ def get_args_parser() -> argparse.ArgumentParser:
         type=float,
         help="Cluster aggregation threshold",
     )
+    parser.add_argument(
+        "--cand-quantile",
+        default=0.9,
+        type=float,
+        help="Candidate Localization quantile: patches with "
+             "sim > quantile(sim, q) become candidates",
+    )
 
     # Dataset
     parser.add_argument(

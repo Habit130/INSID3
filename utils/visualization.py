@@ -93,6 +93,41 @@ def visualize_prediction_segmentation(
     plt.close(fig)
 
 
+def visualize_prediction_referring(
+    target_image: str | Path | Image.Image,
+    expression: str,
+    predicted_mask: str | Path | Image.Image | np.ndarray | torch.Tensor,
+    output_path: str | Path | None = None,
+    *,
+    alpha: float = 0.45,
+    visualize: bool = False,
+) -> None:
+    """Save or show the target image with the predicted mask for a Referring Expression."""
+    target_pil = _load_image(target_image)
+    target_np = np.array(target_pil)
+
+    predicted_mask_np = _load_mask(predicted_mask, target_np.shape[:2])
+    target_overlay = _overlay_mask(target_np, predicted_mask_np, color=(0.15, 0.8, 0.35), alpha=alpha)
+
+    fig, axis = plt.subplots(figsize=(8, 8), constrained_layout=True)
+    axis.imshow(target_overlay)
+    axis.set_title(f'"{expression}"')
+    axis.axis("off")
+
+    if visualize:
+        plt.show()
+        plt.close(fig)
+        return
+
+    if output_path is None:
+        raise ValueError("output_path must be provided when visualize is False")
+
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+
 # ──────── utils for semantic correspondence visualization ────────
 
 # Palette — up to 10 keypoints; falls back to a generated colormap for more
