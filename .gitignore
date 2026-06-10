@@ -6,3 +6,4 @@ output
 data
 pretrain
 CRF
+.pytest_cache
