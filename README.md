@@ -115,6 +115,7 @@ Main arguments (see `opts.py`):
 - `--data-root`: eval package root
 - `--image-size` (default `1024`); hyperparameters `--tau` (0.6), `--merge-thresh` (0.2), `--cand-quantile` (0.9)
 - `--limit N`: cap to the first N expressions (prediction contract validated, official evaluator skipped)
+- `--sample N`: evaluate a random subset of N expressions (drawn with `--seed`); script-computed estimates land in `sampled_metrics.json`
 - `--crf-mask-refinement`: enable CRF post-processing
 
 Each run writes one binary PNG per `sent_id` under
