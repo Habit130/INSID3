@@ -20,7 +20,7 @@ class TFRIS(nn.Module):
         dinotxt: DinoTxtEncoder,
         image_size: int = 1024,
         tau: float = 0.6,
-        merge_threshold: float = 0.2,
+        merge_threshold: float = 0.32,
         cand_quantile: float = 0.9,
         mask_refiner: str = "bilinear",
         resize_to_orig_size: bool = True,
@@ -131,49 +131,49 @@ class TFRIS(nn.Module):
         h: int,
         w: int,
     ) -> torch.Tensor:
-        """Select the seed cluster and aggregate remaining clusters."""
+        """Select the seed cluster and aggregate clusters by a soft product score.
+
+        A cluster k joins the output when
+
+            score_k = intra_sim_k * cross_sim_norm_k > merge_threshold
+
+        where intra_sim_k is the native-feature cosine between cluster k's
+        prototype and the seed's, and cross_sim_norm_k is the per-episode min-max
+        normalization of the mean text-vs-patch similarity over cluster k. No hard
+        gates: every cluster is scoreable regardless of candidate overlap, and
+        adjacency is not used (ADR 0003). The seed cluster is always retained.
+        """
         matched_mask = candidate_mask & (cluster_labels >= 0)
         if matched_mask.sum() == 0:
             return candidate_mask
 
-        matched_ids, n_pixels = cluster_labels[matched_mask].unique(return_counts=True)
+        matched_ids = cluster_labels[matched_mask].unique()
 
-        # Area weighting
-        all_areas = cluster_labels[cluster_labels >= 0].unique(return_counts=True)[1]
-        per_cluster = torch.zeros(K, device=cluster_labels.device)
-        per_cluster[matched_ids] = n_pixels.float()
-        area_weights = per_cluster / all_areas
-
-        # Seed selection: cluster with highest similarity to the Text Prototype
-        protos_matched = cluster_protos[matched_ids]
-        cross_sim_matched = protos_matched @ text_prototype
+        # Seed selection: candidate-covered cluster most similar to the Text Prototype
+        cross_sim_matched = cluster_protos[matched_ids] @ text_prototype
         seed_idx = int(torch.argmax(cross_sim_matched).item())
         seed_id = matched_ids[seed_idx].item()
 
-        # Intra-image similarity to seed (Native Features)
+        # intra_sim: native-feature cosine of each cluster's prototype to the seed
         native_protos = compute_cluster_prototypes(
             feat_native_flat, cluster_labels.view(-1), K
         )
         intra_sim = torch.einsum('c,kc->k', native_protos[seed_id], native_protos)
 
-        # Cross-image similarity per cluster (Aligned Features vs Text Prototype)
+        # cross_sim_norm: per-episode min-max normalized mean text-vs-patch similarity
         cross_sim = torch.empty(K, device=sim.device, dtype=sim.dtype)
         for k in range(K):
             idx = (cluster_labels == k)
             cross_sim[k] = sim[idx].mean() if idx.any() else 0.0
+        cross_sim_norm = (cross_sim - cross_sim.min()) / (cross_sim.max() - cross_sim.min() + 1e-8)
 
-        # Combined score
-        combined = cross_sim * intra_sim
-        area_weights[seed_id] = 1.0
-        combined *= area_weights
+        score = intra_sim * cross_sim_norm
 
         final_mask = torch.zeros(h, w, dtype=torch.bool, device=cluster_labels.device)
         valid = cluster_labels >= 0
-        final_mask[valid] = combined[cluster_labels[valid]] > self.merge_threshold
-        # The aligned space bounds text-vs-patch cosines well below the range
-        # INSID3's cross-image similarities lived in, so even the seed's combined
-        # score can fall under merge_threshold; restore INSID3's implicit
-        # guarantee that the seed cluster is always part of the output (ADR 0001).
+        final_mask[valid] = score[cluster_labels[valid]] > self.merge_threshold
+        # The seed's own score can fall below merge_threshold, so force-keep it to
+        # preserve the guarantee that the seed cluster is always part of the output.
         final_mask |= (cluster_labels == seed_id)
         return final_mask
 

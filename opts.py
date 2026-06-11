@@ -30,9 +30,11 @@ def get_args_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--merge-thresh",
-        default=0.2,
+        default=0.32,
         type=float,
-        help="Cluster aggregation threshold",
+        help="Cluster aggregation threshold on the soft score "
+             "intra_sim * cross_sim_norm (a cluster joins the output when its "
+             "score exceeds this)",
     )
     parser.add_argument(
         "--cand-quantile",
