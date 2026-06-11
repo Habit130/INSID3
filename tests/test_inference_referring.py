@@ -132,6 +132,41 @@ def test_inline_iou_estimate_in_progress_bar_and_log(fake_package, tmp_path, mon
     assert "IoU" in log and "1.000" in log
 
 
+def test_sampled_run_evaluates_seeded_random_subset(fake_package, tmp_path, monkeypatch):
+    """--sample N: exactly N PNGs, named by the sent_ids of the seeded random
+    subset; sampled_metrics.json carries script-computed estimates and the
+    official evaluator is skipped."""
+    import random
+
+    args = make_args(fake_package, tmp_path / "run", ["--sample", "2", "--seed", "0"])
+    run_main(args, monkeypatch)
+
+    expected_idx = sorted(random.Random(0).sample(range(len(SIZES)), 2))
+    pred_dir = tmp_path / "run" / "predictions" / "refcoco" / "val"
+    assert sorted(p.name for p in pred_dir.glob("*.png")) == sorted(
+        f"{100 + i}.png" for i in expected_idx
+    )
+
+    report = json.loads((tmp_path / "run" / "sampled_metrics.json").read_text())
+    assert report["sample_size"] == 2
+    assert report["total_split_count"] == len(SIZES)
+    assert report["seed"] == 0
+    assert report["expression_weighted"]["mIoU"] == 1.0  # all-True pred vs all-FG GT
+    assert report["expression_weighted"]["Precision@0.5"] == 1.0
+    assert report["overall_IoU"] == 1.0
+    assert "not official" in report["note"]
+
+    log = (tmp_path / "run" / "log.txt").read_text(encoding="utf-8")
+    assert "Sampled metrics report" in log
+    assert "Official evaluator report" not in log
+
+
+def test_sample_and_limit_are_mutually_exclusive(fake_package, tmp_path, monkeypatch):
+    args = make_args(fake_package, tmp_path / "run", ["--sample", "2", "--limit", "2"])
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        run_main(args, monkeypatch)
+
+
 @pytest.mark.parametrize("argv", [
     ["--fold", "0"],
     ["--shots", "1"],

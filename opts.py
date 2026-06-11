@@ -71,6 +71,15 @@ def get_args_parser() -> argparse.ArgumentParser:
              "contract is validated instead",
     )
     parser.add_argument(
+        "--sample",
+        default=None,
+        type=int,
+        help="Evaluate a random subset of N expressions (drawn with --seed). "
+             "The official evaluator is skipped (it requires complete splits); "
+             "sampled metrics are computed by the script instead and written "
+             "to sampled_metrics.json",
+    )
+    parser.add_argument(
         "--output-dir",
         default="output",
         help="Directory for logs and results",
