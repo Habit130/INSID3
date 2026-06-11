@@ -10,9 +10,10 @@ import PIL.Image as Image
 import numpy as np
 
 _SPLITS = {
-    'refcoco': ('val', 'testA', 'testB'),
-    'refcoco+': ('val', 'testA', 'testB'),
-    'refcocog': ('val', 'test_U', 'test_G'),
+    # eval-package splits + tuning-package train splits (isomorphic layout)
+    'refcoco': ('val', 'testA', 'testB', 'train'),
+    'refcoco+': ('val', 'testA', 'testB', 'train'),
+    'refcocog': ('val', 'test_U', 'test_G', 'train_U', 'train_G'),
 }
 
 
