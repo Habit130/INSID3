@@ -244,21 +244,12 @@ def diagnose_episode(model, ep: dict, data_root: str, ep_id: str,
             "intra_x_crossnorm_x_adj": round(isim * csn * adj, 5),
         })
 
-    # ── Final mask via the real merge rule (for failure categorisation/IoU) ──
-    all_areas = labels[labels >= 0].unique(return_counts=True)[1]
-    per_cluster = torch.zeros(K, device=device)
-    n_pixels = labels[matched_mask].unique(return_counts=True)[1]
-    per_cluster[matched_ids] = n_pixels.float()
-    area_weights = per_cluster / all_areas
-    combined = cross_sim_raw * intra_sim
-    area_weights[seed_id] = 1.0
-    combined = combined * area_weights
-    n_merged = int((combined > model.merge_threshold).sum().item())
+    # ── Final mask via the model's actual merge rule (no rule duplication) ──
+    score = intra_sim * cross_sim_norm
+    n_merged = int((score > model.merge_threshold).sum().item())
 
-    final = torch.zeros(h, w, dtype=torch.bool, device=device)
-    valid = labels >= 0
-    final[valid] = combined[labels[valid]] > model.merge_threshold
-    final |= seed_mask
+    final = model._seed_and_aggregate(
+        cand, labels, protos_aligned, K, text_proto, feat_native_flat, sim, h, w)
     up = upsample_mask(final, img.shape[-2], img.shape[-1])
     up = upsample_mask(up, orig_size[0], orig_size[1]) > 0.5
     iou = (up & gt_full).sum().item() / max((up | gt_full).sum().item(), 1)

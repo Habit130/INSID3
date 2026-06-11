@@ -110,7 +110,7 @@ def test_build_tfris_from_args_uses_parser_defaults(monkeypatch):
     assert args.cand_quantile == 0.9
     assert model.cand_quantile == 0.9
     assert model.tau == 0.6
-    assert model.merge_threshold == 0.2
+    assert model.merge_threshold == 0.32
     assert model.resize_to_orig_size is True
 
 

@@ -8,7 +8,7 @@ def build_tfris(
     *,
     image_size: int = 1024,
     tau: float = 0.6,
-    merge_threshold: float = 0.2,
+    merge_threshold: float = 0.32,
     cand_quantile: float = 0.9,
     mask_refiner: str = "bilinear",
     resize_to_orig_size: bool = True,
