@@ -25,7 +25,7 @@ per-pixel category map. See the report header.
 
 Usage (run through the insid3 env):
   conda run -n insid3 python tools/diagnose_expansion.py \
-      --data-root ../refcoco_tuning_package_seed42 --sample 100 --seed 0 \
+      --data-root ../refcoco_tuning_package_seed42 --sample 100 --seed 42 \
       --out output/ws1_diag
 """
 from __future__ import annotations
@@ -482,7 +482,7 @@ def main() -> None:
     parser.add_argument("--data-root", default="../refcoco_tuning_package_seed42")
     parser.add_argument("--sample", type=int, default=100,
                         help="expressions sampled per split (seeded)")
-    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--out", default="output/ws1_diag",
                         help="prefix for <out>_clusters.jsonl / _episodes.jsonl / _report.md")

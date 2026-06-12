@@ -27,7 +27,7 @@ they are never fed to the model.
 
 Usage:
   conda run -n insid3 python tools/grid_search.py \
-      --data-root ../refcoco_tuning_package_seed42 --sample 100 --seed 0 \
+      --data-root ../refcoco_tuning_package_seed42 --sample 100 --seed 42 \
       --out output/ws3_grid
 """
 from __future__ import annotations
@@ -194,7 +194,7 @@ def main() -> None:
     p.add_argument("--data-root", default="../refcoco_tuning_package_seed42")
     p.add_argument("--sample", type=int, default=100,
                    help="expressions per split (seeded); None = full split")
-    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--seed", type=int, default=42)
     p.add_argument("--device", default="cuda")
     p.add_argument("--out", default="output/ws3_grid")
     p.add_argument("--tau-grid", type=float, nargs="+",

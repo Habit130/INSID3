@@ -135,7 +135,7 @@ def main() -> None:
     p.add_argument("--data-root", default="../refcoco_tuning_package_seed42")
     p.add_argument("--sample", type=int, default=None,
                    help="expressions per split (default: full split, matching #12)")
-    p.add_argument("--seed", type=int, default=0)
+    p.add_argument("--seed", type=int, default=42)
     p.add_argument("--device", default="cuda")
     p.add_argument("--out", default="output/ws2_calib")
     args = p.parse_args()
