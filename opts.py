@@ -98,9 +98,9 @@ def get_args_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--seed",
-        default=0,
+        default=42,
         type=int,
-        help="Random seed",
+        help="Random seed (project-wide evaluation protocol fixes seed=42)",
     )
     parser.add_argument(
         "--num-workers",
